@@ -223,3 +223,6 @@ You now have a **zero-latency**, **LAN-only**, and **fully free** remote monitor
 * Safe within LAN
 * Expandable to 200+ systems
 * Ready for future integration (e.g., NodeHQ modules)
+
+
+sudo apt install tigervnc-viewer -y
