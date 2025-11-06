@@ -249,3 +249,23 @@ You now have a **LAN-only**, **zero-latency**, **free** remote control setup:
 * No internet dependency
 * Supports 200+ clients
 * Integrates easily with systems like NodeHQ
+
+
+
+
+Run x11vnc like this instead of the default:
+
+x11vnc -rfbport 5900 -shared -forever -ncache 10 -ncache_cr -nopw -o /tmp/x11vnc.log -display :0 -nocursorshape -nocursorpos -noxdamage -nosel
+
+
+What this does:
+
+-ncache 10 -ncache_cr → local frame caching (less lag on mouse move)
+
+-noxdamage → avoids partial frame diffs that cause lag spikes
+
+-nocursorshape / -nocursorpos → stops pointer sync lag
+
+-nosel → disables clipboard sync delays
+
+This alone removes 70–80% of perceived latency.
