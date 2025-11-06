@@ -1,0 +1,251 @@
+# 🖥️ Linux LAN VNC Monitoring Setup (Updated)
+
+Complete guide to set up **LAN-based desktop monitoring and control** using **x11vnc**, **Remmina**, and **Avahi** (`.local` hostnames).
+Now includes a fix for the **“not local / :0” VNC error**.
+
+---
+
+## ⚙️ Overview
+
+* **Controller PC:** Used to view/control others.
+* **Client PCs:** Machines to be monitored.
+* **Network:** Must be same LAN/subnet.
+* **Naming:** Use `.local` hostnames (like `pc-b.local`) for automatic detection.
+
+---
+
+## 🧩 Step 1 — Check LAN Connectivity
+
+On both PCs:
+
+```bash
+ip a | grep inet
+```
+
+Example:
+
+```
+Controller: 172.16.5.10
+Client:     172.16.5.22
+```
+
+If both share the same subnet → ✅ OK
+
+---
+
+## 🖥️ Step 2 — On the Client (Machine to Control)
+
+### 1. Set Hostname
+
+```bash
+sudo hostnamectl set-hostname pc-b
+```
+
+### 2. Install Packages
+
+```bash
+sudo apt update
+sudo apt install x11vnc avahi-daemon -y
+```
+
+### 3. Enable Avahi for `.local`
+
+```bash
+sudo systemctl enable --now avahi-daemon
+```
+
+### 4. Set VNC Password
+
+```bash
+x11vnc -storepasswd
+```
+
+### 5. Start VNC Server
+
+```bash
+x11vnc -forever -usepw -shared -auth guess -display :0
+```
+
+Keep the terminal open — the display is now shared on **port 5900**.
+
+---
+
+## 💻 Step 3 — On the Controller (Viewer PC)
+
+### 1. Install Remmina
+
+```bash
+sudo apt update
+sudo apt install remmina -y
+```
+
+### 2. Connect via Remmina
+
+* **Protocol:** VNC
+* **Server:** `pc-b.local:5900`
+* **Password:** (the one you set)
+
+✅ You should now see and control the client desktop.
+
+---
+
+## 🔄 Step 4 — Auto-Start VNC on Boot (Client)
+
+```bash
+sudo nano ~/.bashrc
+```
+
+Add this line at the end:
+
+```bash
+x11vnc -forever -usepw -shared -auth guess -display :0 &
+```
+
+Now x11vnc starts after every login.
+
+---
+
+## 🧠 Step 5 — Test `.local` Discovery
+
+From the controller:
+
+```bash
+ping pc-b.local
+```
+
+If it replies, Avahi is working fine.
+
+---
+
+## 🛠️ Troubleshooting & Fixes
+
+### 1️⃣ Avahi / Hostname Not Found
+
+```bash
+sudo apt install avahi-daemon -y
+sudo systemctl enable --now avahi-daemon
+sudo systemctl restart avahi-daemon
+```
+
+Then test again:
+
+```bash
+ping pc-b.local
+```
+
+---
+
+### 2️⃣ “Not Local” / `:0` Error Fix (VNC Not Showing Desktop)
+
+If you see messages like:
+
+```
+pc-b:0 not local
+unable to open display :0
+```
+
+Follow these exact steps:
+
+```bash
+pkill x11vnc
+echo $DISPLAY
+who
+```
+
+You’ll see something like:
+
+```
+zohaib  tty7  Nov  3 08:21 (:0)
+```
+
+→ Display is `:0` and user is `zohaib`.
+
+Then start x11vnc manually with correct auth:
+
+```bash
+x11vnc -usepw -forever -shared -auth /home/zohaib/.Xauthority -display :0
+```
+
+If you’re unsure where `.Xauthority` is:
+
+```bash
+find /home -name ".Xauthority"
+```
+
+When it starts successfully, it should say:
+
+```
+The VNC desktop is: pc-b:0
+```
+
+✅ Connect again via `pc-b.local:5900`.
+
+---
+
+### 3️⃣ VNC Running But Connection Refused
+
+Check port:
+
+```bash
+sudo ss -tulpn | grep 5900
+```
+
+If not found, restart x11vnc manually using the above command.
+
+---
+
+### 4️⃣ Works by IP But Not `.local`
+
+Reinstall or restart Avahi on both:
+
+```bash
+sudo apt install avahi-daemon -y
+sudo systemctl restart avahi-daemon
+```
+
+---
+
+### 5️⃣ Different Subnets (e.g., 192.168.x.x vs 172.16.x.x)
+
+Ensure all are connected to the same router/switch.
+Adjust Sophos or LAN policies if needed.
+
+---
+
+### 6️⃣ DHCP / Changing IPs
+
+Use `.local` names — they work fine even with changing IPs.
+Optionally reserve static IPs in Sophos DHCP using each machine’s MAC address.
+
+---
+
+### 7️⃣ Optional: Scan for All Active Clients
+
+```bash
+sudo apt install nmap -y
+nmap -p5900 --open 172.16.5.0/24
+```
+
+This lists all machines running x11vnc.
+
+---
+
+## ✅ Summary Table
+
+| Department | Hostname | Connect String           |
+| ---------- | -------- | ------------------------ |
+| HR         | hr01     | `vnc://hr01.local:5900`  |
+| Finance    | fin01    | `vnc://fin01.local:5900` |
+| Support    | sup01    | `vnc://sup01.local:5900` |
+| IT         | it01     | `vnc://it01.local:5900`  |
+
+---
+
+## 🎯 Result
+
+You now have a **LAN-only**, **zero-latency**, **free** remote control setup:
+
+* Works even if IPs change
+* No internet dependency
+* Supports 200+ clients
+* Integrates easily with systems like NodeHQ
