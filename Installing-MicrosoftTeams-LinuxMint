@@ -1,0 +1,144 @@
+🧩 README: Install Microsoft Teams on Linux Mint (All Working Methods)
+📌 Overview
+
+This guide explains all possible ways to install and run Microsoft Teams on Linux Mint, including:
+
+🏗️ Official Microsoft .deb package
+
+🧱 Flatpak version (recommended for stability)
+
+🌐 Web (browser-based PWA)
+
+🛠️ Troubleshooting common issues (sound, mic, login loop)
+
+🧰 Requirements
+
+Before installation, update your system:
+
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y wget curl apt-transport-https software-properties-common
+
+🏗️ Method 1: Official .deb Package (Microsoft Repository)
+
+⚠️ Note: Microsoft deprecated the old Teams (Classic). The new version is “Teams for Work or School (Preview)”.
+
+Steps
+# 1️⃣ Import Microsoft GPG key
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+
+# 2️⃣ Add Teams repository
+sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main" > /etc/apt/sources.list.d/teams.list'
+
+# 3️⃣ Update & install
+sudo apt update
+sudo apt install teams -y
+
+Run Teams:
+teams
+
+🧱 Method 2: Flatpak (Recommended for Mint)
+
+Flatpak runs Teams in a sandbox, works well with Mint’s Cinnamon desktop, and avoids repo issues.
+
+Install Flatpak & Teams:
+sudo apt install -y flatpak
+sudo flatpak install flathub com.microsoft.Teams -y
+
+Run Teams:
+flatpak run com.microsoft.Teams
+
+Update later:
+flatpak update
+
+🌐 Method 3: Browser-based PWA (Fastest + Lightest)
+
+If you don’t want to install Teams, you can use the Web App (PWA) — supports notifications, calls, and screen sharing.
+
+Steps:
+
+Open: https://teams.microsoft.com
+
+Log in with your Microsoft 365 or work account.
+
+In Chrome/Edge → click Install Microsoft Teams from the address bar (if prompted).
+
+It’ll install as a standalone web app (PWA) — fast and lightweight.
+
+🛠️ Method 4: Manual .deb Install (Offline / Custom)
+
+If you want to install manually:
+
+# Download latest .deb
+wget https://go.microsoft.com/fwlink/p/?LinkID=2112886 -O teams.deb
+
+# Install package
+sudo dpkg -i teams.deb
+
+# Fix missing deps if any
+sudo apt --fix-broken install -y
+
+
+Then run:
+
+teams
+
+🧩 Fix Common Issues
+🎤 Microphone / Audio not working
+sudo apt install -y pavucontrol
+pavucontrol
+
+
+➡ Check that Microsoft Teams is selected as input/output device.
+
+🪟 Teams not launching or blank screen
+
+Run this:
+
+rm -rf ~/.config/Microsoft/Microsoft\ Teams/
+rm -rf ~/.config/teams/
+teams
+
+🔁 Login Loop Fix
+
+If you get stuck logging in:
+
+rm -rf ~/.config/Microsoft/Teams
+
+
+Then relaunch Teams.
+
+🚀 Optional: Auto-launch at startup
+mkdir -p ~/.config/autostart
+cp /usr/share/applications/teams.desktop ~/.config/autostart/
+
+💡 Tips
+
+✅ Use Flatpak version for long-term stability.
+
+⚡ For quick joins, use PWA (browser).
+
+🧰 For corporate integration, use official repo version.
+
+🧾 Uninstall
+Remove .deb version:
+sudo apt remove --purge teams -y
+sudo rm /etc/apt/sources.list.d/teams.list
+
+Remove Flatpak version:
+flatpak uninstall com.microsoft.Teams -y
+
+📸 Screenshot Example
+# Optional if you want to add to your GitHub README later:
+# Take a screenshot and save it to /assets/teams.png
+gnome-screenshot -f ~/Pictures/teams.png
+
+
+Then in your README:
+
+![Teams on Linux Mint](assets/teams.png)
+
+🧱 Author
+
+Muhammad Zohaib
+Linux | Web Development | Automation | BPO Tools
+📧 letsconnectzohaib@gmail.com
